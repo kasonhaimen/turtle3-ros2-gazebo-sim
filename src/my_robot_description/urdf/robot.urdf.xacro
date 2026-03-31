@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<!-- 机器人URDF/XACRO文件，定义了机器人的物理结构和属性 -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_cool_robot">
+
+    <!-- 定义长方体惯性属性的宏：用于计算长方体形状的惯量矩阵 -->
+    <xacro:macro name="inertial_box" params="mass x y z *origin">
+        <inertial>
+            <xacro:insert_block name="origin" />
+            <mass value="${mass}" />
+            <!-- 长方体的惯量矩阵计算公式 -->
+            <inertia ixx="${(1/12) * mass * (y*y+z*z)}" ixy="0.0" ixz="0.0"
+                iyy="${(1/12) * mass * (x*x+z*z)}" iyz="0.0"
+                izz="${(1/12) * mass * (x*x+y*y)}" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- 定义圆柱体惯性属性的宏：用于计算圆柱体形状的惯量矩阵 -->
+    <xacro:macro name="inertial_cylinder" params="mass radius length *origin">
+        <inertial>
+            <xacro:insert_block name="origin" />
+            <mass value="${mass}" />
+            <!-- 圆柱体的惯量矩阵计算公式 -->
+            <inertia ixx="${(1/12) * mass * (3*radius*radius + length*length)}" ixy="0.0" ixz="0.0"
+                iyy="${(1/12) * mass * (3*radius*radius + length*length)}" iyz="0.0"
+                izz="${(1/2) * mass * (radius*radius)}" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- 定义材质颜色：白色、蓝色、黑色 -->
+    <material name="white">
+        <color rgba="1 1 1 1" />
+    </material>
+    <material name="blue">
+        <color rgba="0.2 0.2 1 1" />
+    </material>
+    <material name="black">
+        <color rgba="0 0 0 1" />
+    </material>
+
+    <!-- 基础链接：机器人的根链接，作为其他部件的参考坐标系 -->
+    <link name="base_link"></link>
+
+    <!-- 底盘关节：固定关节，将底盘连接到基础链接 -->
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="chassis" />
+        <origin xyz="-0.1 0 0" />
+    </joint>
+
+    <!-- 底盘链接：机器人的主体部分 -->
+    <link name="chassis">
+        <!-- 视觉外观：定义底盘的视觉属性 -->
+        <visual>
+            <origin xyz="0.15 0 0.075" />
+            <geometry>
+                <box size="0.3 0.3 0.15" />
+            </geometry>
+            <material name="white" />
+        </visual>
+        <!-- 碰撞属性：定义底盘的碰撞检测几何形状 -->
+        <collision>
+            <origin xyz="0.15 0 0.075" />
+            <geometry>
+                <box size="0.3 0.3 0.15" />
+            </geometry>
+        </collision>
+        <!-- 惯性属性：使用长方体惯性宏计算底盘的惯量 -->
+        <xacro:inertial_box mass="0.5" x="0.3" y="0.3" z="0.15">
+            <origin xyz="0.15 0 0.075" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <!-- 左轮关节：连续旋转关节，允许左轮无限旋转 -->
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link" />
+        <child link="left_wheel" />
+        <origin xyz="0 0.175 0" rpy="-${pi/2} 0 0" />
+        <axis xyz="0 0 1" />
+    </joint>
+
+    <!-- 左轮链接：定义左轮的物理属性 -->
+    <link name="left_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.04" />
+            </geometry>
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.04" />
+            </geometry>
+        </collision>
+        <!-- 使用圆柱体惯性宏计算左轮的惯量 -->
+        <xacro:inertial_cylinder mass="0.1" radius="0.05" length="0.04">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <!-- 右轮关节：连续旋转关节，允许右轮无限旋转 -->
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link" />
+        <child link="right_wheel" />
+        <origin xyz="0 -0.175 0" rpy="-${pi/2} 0 0" />
+        <axis xyz="0 0 1" />
+    </joint>
+
+    <!-- 右轮链接：定义右轮的物理属性 -->
+    <link name="right_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.04" />
+            </geometry>
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.04" />
+            </geometry>
+        </collision>
+        <!-- 使用圆柱体惯性宏计算右轮的惯量 -->
+        <xacro:inertial_cylinder mass="0.1" radius="0.05" length="0.04">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <!-- 万向轮关节：固定关节，将万向轮连接到底盘 -->
+    <joint name="caster_wheel_joint" type="fixed">
+        <parent link="chassis" />
+        <child link="caster_wheel" />
+        <origin xyz="0.24 0 0" />
+    </joint>
+
+    <!-- 万向轮链接：定义万向轮的物理属性 -->
+    <link name="caster_wheel">
+        <visual>
+            <geometry>
+                <sphere radius="0.05" />
+            </geometry>
+            <material name="black" />
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="0.05" />
+            </geometry>
+        </collision>
+        <!-- 万向轮的惯性属性 -->
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <mass value="0.1" />
+            <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001" />
+        </inertial>
+    </link>
+
+    <!-- 激光雷达传感器-->
+    <joint name="laser_joint" type="fixed">
+        <parent link="chassis" />
+        <child link="laser_frame" />
+        <origin xyz="0.1 0 0.175" rpy="0 0 0" />
+    </joint>
+
+    <link name="laser_frame">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.04" />
+            </geometry>
+            <material name="black" />
+        </visual>
+    </link>
+
+    <gazebo reference="laser_frame">
+        <sensor name="laser" type="gpu_lidar">
+            <gz_frame_id>laser_frame</gz_frame_id>
+            <pose>0 0 0 0 0 0</pose>
+            <topic>scan</topic>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>640</samples>
+                        <min_angle>-3.14</min_angle>
+                        <max_angle>3.14</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>12.0</max>
+                </range>
+            </ray>
+            <always_on>1</always_on>
+            <visualize>true</visualize>
+        </sensor>
+    </gazebo>
+
+    <!-- Gazebo仿真器配置：设置万向轮的摩擦系数 -->
+    <gazebo reference="caster_wheel">
+        <mu1 value="0.001" />
+        <mu2 value="0.001" />
+    </gazebo>
+
+    <!-- Gazebo仿真器插件配置 -->
+    <gazebo>
+        <!-- 差速驱动插件：控制机器人的左右轮运动 -->
+        <plugin
+            filename="gz-sim-diff-drive-system"
+            name="gz::sim::systems::DiffDrive">
+            <topic>cmd_vel</topic>
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+
+            <!-- 轮距和轮半径参数 -->
+            <wheel_separation>0.35</wheel_separation>
+            <wheel_radius>0.05</wheel_radius>
+
+            <!-- 最大扭矩和加速度限制 -->
+            <max_wheel_torque>20</max_wheel_torque>
+            <max_wheel_acceleration>1.0</max_wheel_acceleration>
+
+            <!-- ROS话题和坐标系配置 -->
+            <topic>cmd_vel</topic>
+            <odom_topic>odom</odom_topic>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_link</child_frame_id>
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>true</publish_wheel_tf>
+        </plugin>
+
+        <!-- 关节状态发布插件：发布关节状态信息 -->
+        <plugin
+            filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+        </plugin>
+
+        <!-- 激光雷达传感器的gazebo插件声明-->
+        <plugin
+            filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+            <render_engine>ogre2</render_engine>
+        </plugin>
+    </gazebo>
+
+</robot>

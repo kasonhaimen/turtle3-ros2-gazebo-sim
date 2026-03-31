@@ -1,0 +1,34 @@
+# 激光雷达扫描
+- ros_topic_name: "/scan"
+  gz_topic_name: "/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"  # 修改点：增加 _name
+  gz_type_name: "gz.msgs.LaserScan"          # 修改点：增加 _name
+  direction: GZ_TO_ROS
+
+# 运动控制指令
+- ros_topic_name: "/cmd_vel"
+  gz_topic_name: "/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+# 关节状态
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/world/empty/model/my_cool_robot/joint_state" # 注意路径可能随世界名称改变
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+# 里程计数据
+- ros_topic_name: "/odom"
+  gz_topic_name: "/odom"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# 坐标变换 (TF)
+- ros_topic_name: "/tf"
+  gz_topic_name: "/model/my_cool_robot/tf"
+  ros_type_name: "tf2_msgs/msg/TFMessage"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: GZ_TO_ROS
