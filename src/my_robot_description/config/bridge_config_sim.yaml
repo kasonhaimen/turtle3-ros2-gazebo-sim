@@ -1,9 +1,13 @@
 # 激光雷达扫描
 - ros_topic_name: "/scan"
   gz_topic_name: "/scan"
-  ros_type_name: "sensor_msgs/msg/LaserScan"  # 修改点：增加 _name
-  gz_type_name: "gz.msgs.LaserScan"          # 修改点：增加 _name
+  # 官方标准写法：使用 _name 后缀
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
+  publisher_options:
+    qos:
+      reliability: "best_effort"  # 解决 WSL2 丢包
 
 # 运动控制指令
 - ros_topic_name: "/cmd_vel"
@@ -14,7 +18,7 @@
 
 # 关节状态
 - ros_topic_name: "/joint_states"
-  gz_topic_name: "/world/empty/model/my_cool_robot/joint_state" # 注意路径可能随世界名称改变
+  gz_topic_name: "/world/empty/model/my_cool_robot/joint_state" # 注意该路径可能随世界名称改变
   ros_type_name: "sensor_msgs/msg/JointState"
   gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
@@ -26,7 +30,7 @@
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
-# 坐标变换 (TF)
+# 坐标系变换桥接
 - ros_topic_name: "/tf"
   gz_topic_name: "/model/my_cool_robot/tf"
   ros_type_name: "tf2_msgs/msg/TFMessage"

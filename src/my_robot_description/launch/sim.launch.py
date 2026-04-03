@@ -33,7 +33,7 @@ def generate_launch_description():
     )
 
     # 3. 桥接器配置 (Bridge)
-    bridge_config = os.path.join(pkg_share, 'config', 'bridge_config.yaml')
+    bridge_config = os.path.join(pkg_share, 'config', 'bridge_config_sim.yaml')
 
     ros_gz_bridge = Node(
         package='ros_gz_bridge',
@@ -52,10 +52,20 @@ def generate_launch_description():
         arguments=[
             '-topic', 'robot_description',
             '-name', 'my_cool_robot',
-            '-z', '0.1' 
+            '-z', '0.1' ,
+            '-x', '-1',
         ],
         parameters=[{'use_sim_time': True}], # 同样建议加上
         output='screen'
+    )
+
+    # 5激光雷达过滤器节点
+    # 1. 获取配置文件的绝对路径
+    package_name = 'my_robot_description' # 替换为你的功能包名
+    filter_config = os.path.join(
+        get_package_share_directory(package_name),
+        'config',
+        'my_laser_filter.yaml'
     )
 
     return LaunchDescription([

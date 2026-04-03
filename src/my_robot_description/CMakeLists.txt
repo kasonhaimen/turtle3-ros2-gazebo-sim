@@ -27,6 +27,7 @@ ament_package()
 
 # 安装 launch, urdf, worlds 等目录到 share 路径下
 install(DIRECTORY
+  rviz
   launch
   urdf
   worlds

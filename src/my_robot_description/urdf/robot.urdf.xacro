@@ -170,14 +170,13 @@
 
     <gazebo reference="laser_frame">
         <sensor name="laser" type="gpu_lidar">
-            <gz_frame_id>laser_frame</gz_frame_id>
             <pose>0 0 0 0 0 0</pose>
             <topic>scan</topic>
             <update_rate>10</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>640</samples>
+                        <samples>360</samples>
                         <min_angle>-3.14</min_angle>
                         <max_angle>3.14</max_angle>
                     </horizontal>
@@ -200,44 +199,46 @@
 
     <!-- Gazebo仿真器插件配置 -->
     <gazebo>
-        <!-- 差速驱动插件：控制机器人的左右轮运动 -->
-        <plugin
-            filename="gz-sim-diff-drive-system"
-            name="gz::sim::systems::DiffDrive">
-            <topic>cmd_vel</topic>
-            <left_joint>left_wheel_joint</left_joint>
-            <right_joint>right_wheel_joint</right_joint>
 
-            <!-- 轮距和轮半径参数 -->
-            <wheel_separation>0.35</wheel_separation>
-            <wheel_radius>0.05</wheel_radius>
-
-            <!-- 最大扭矩和加速度限制 -->
-            <max_wheel_torque>20</max_wheel_torque>
-            <max_wheel_acceleration>1.0</max_wheel_acceleration>
-
-            <!-- ROS话题和坐标系配置 -->
-            <topic>cmd_vel</topic>
-            <odom_topic>odom</odom_topic>
-            <frame_id>odom</frame_id>
-            <child_frame_id>base_link</child_frame_id>
-            <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
-            <publish_wheel_tf>true</publish_wheel_tf>
-        </plugin>
-
-        <!-- 关节状态发布插件：发布关节状态信息 -->
-        <plugin
-            filename="gz-sim-joint-state-publisher-system"
-            name="gz::sim::systems::JointStatePublisher">
-        </plugin>
-
-        <!-- 激光雷达传感器的gazebo插件声明-->
+        <!-- 传感器系统 -->
         <plugin
             filename="gz-sim-sensors-system"
             name="gz::sim::systems::Sensors">
             <render_engine>ogre2</render_engine>
         </plugin>
+
+        <!-- 差速驱动 -->
+        <plugin
+            filename="gz-sim-diff-drive-system"
+            name="gz::sim::systems::DiffDrive">
+
+            <topic>cmd_vel</topic>
+
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+
+            <wheel_separation>0.35</wheel_separation>
+            <wheel_radius>0.05</wheel_radius>
+
+            <max_wheel_torque>20</max_wheel_torque>
+            <max_wheel_acceleration>1.0</max_wheel_acceleration>
+
+            <!-- 推荐写法 -->
+            <odom_topic>odom</odom_topic>
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_link</robot_base_frame>
+
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>false</publish_wheel_tf>
+
+        </plugin>
+
+        <!-- 关节状态 -->
+        <plugin
+            filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher" />
+
     </gazebo>
 
 </robot>

@@ -5,6 +5,8 @@ log/
 .catkin_tools/
 .colcon/
 *.pyc
+*.gv
+*.pdf
 __pycache__/
 
 # --- Gazebo / 仿真相关 ---
