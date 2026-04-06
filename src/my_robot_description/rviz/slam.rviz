@@ -6,9 +6,12 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /TF1
+        - /TF1/Frames1
+        - /TF1/Tree1
         - /RobotModel1
-        - /RobotModel1/Status1
         - /LaserScan1
+        - /Map1
       Splitter Ratio: 0.5
     Tree Height: 555
   - Class: rviz_common/Selection
@@ -57,21 +60,21 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        my_cool_robot/base_link:
+        base_link:
           Value: true
-        my_cool_robot/base_link/laser:
+        caster_wheel:
           Value: true
-        my_cool_robot/caster_wheel:
+        chassis:
           Value: true
-        my_cool_robot/chassis:
+        laser_frame:
           Value: true
-        my_cool_robot/laser_frame:
+        left_wheel:
           Value: true
-        my_cool_robot/left_wheel:
+        map:
           Value: true
-        my_cool_robot/odom:
+        odom:
           Value: true
-        my_cool_robot/right_wheel:
+        right_wheel:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -79,17 +82,18 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        my_cool_robot/odom:
-          my_cool_robot/base_link:
-            my_cool_robot/chassis:
-              my_cool_robot/caster_wheel:
+        map:
+          {}
+        odom:
+          base_link:
+            chassis:
+              caster_wheel:
                 {}
-              my_cool_robot/laser_frame:
-                my_cool_robot/base_link/laser:
-                  {}
-            my_cool_robot/left_wheel:
+              laser_frame:
+                {}
+            left_wheel:
               {}
-            my_cool_robot/right_wheel:
+            right_wheel:
               {}
       Update Interval: 0
       Value: true
@@ -144,7 +148,7 @@ Visualization Manager:
         Inertia: false
         Mass: false
       Name: RobotModel
-      TF Prefix: my_cool_robot
+      TF Prefix: ""
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -178,14 +182,37 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /scan
+        Value: /scan_fixed
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 0.699999988079071
+      Binary representation: false
+      Binary threshold: 100
+      Class: rviz_default_plugins/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        Filter size: 10
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /map
+      Update Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /map_updates
+      Use Timestamp: false
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: my_cool_robot/odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -228,7 +255,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 10
+      Distance: 5.237863540649414
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -264,5 +291,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 883
-  Y: 769
+  X: 2144
+  Y: 875
