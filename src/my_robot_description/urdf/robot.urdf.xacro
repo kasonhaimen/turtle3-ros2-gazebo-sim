@@ -172,6 +172,7 @@
         <sensor name="laser" type="gpu_lidar">
             <pose>0 0 0 0 0 0</pose>
             <topic>scan</topic>
+            <ignition_frame_id>laser_frame</ignition_frame_id>
             <update_rate>10</update_rate>
             <ray>
                 <scan>
@@ -200,24 +201,19 @@
     <!-- Gazebo仿真器插件配置 -->
     <gazebo>
 
-        <!-- 传感器系统 -->
-        <plugin
-            filename="gz-sim-sensors-system"
-            name="gz::sim::systems::Sensors">
-            <render_engine>ogre2</render_engine>
-        </plugin>
-
         <!-- 差速驱动 -->
         <plugin
             filename="gz-sim-diff-drive-system"
             name="gz::sim::systems::DiffDrive">
-
+            <ros>
+                <namespace>/</namespace>
+            </ros>
             <topic>cmd_vel</topic>
 
             <left_joint>left_wheel_joint</left_joint>
             <right_joint>right_wheel_joint</right_joint>
 
-            <wheel_separation>0.35</wheel_separation>
+            <wheel_separation>0.315</wheel_separation>
             <wheel_radius>0.05</wheel_radius>
 
             <max_wheel_torque>20</max_wheel_torque>
@@ -225,8 +221,8 @@
 
             <!-- 推荐写法 -->
             <odom_topic>odom</odom_topic>
-            <odom_frame>odom</odom_frame>
-            <robot_base_frame>base_link</robot_base_frame>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_link</child_frame_id>
 
             <publish_odom>true</publish_odom>
             <publish_odom_tf>true</publish_odom_tf>
