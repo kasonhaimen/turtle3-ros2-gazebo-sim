@@ -10,13 +10,6 @@ def generate_launch_description():
 # 1. 声明路径和包名
     pkg_path = get_package_share_directory('my_robot_description')
 
-# 1. 新增：声明 frame_prefix 参数，默认值为空字符串（适配真实机器人）
-    declare_frame_prefix = DeclareLaunchArgument(
-        'frame_prefix',
-        default_value='',
-        description='Prefix for robot frames (e.g. my_cool_robot/)'
-    )
-    frame_prefix = LaunchConfiguration('frame_prefix')
 
     # 2. 【核心】定义 Launch 参数 (DeclareLaunchArgument)
     # 这些参数可以从命令行传入，例如：ros2 launch ... use_sim_time:=true
@@ -43,20 +36,11 @@ def generate_launch_description():
         parameters=[{
             'robot_description': robot_description_config,
             'use_sim_time': use_sim_time,
-            'frame_prefix': frame_prefix  # <--- 关键注入
         }]
-    )
-
-    # 添加这个节点：关节状态发布器（带界面）
-    node_joint_state_publisher_gui = Node(
-        package='joint_state_publisher_gui',
-        executable='joint_state_publisher_gui',
-        output='screen'
     )
 
     # 6. 返回包含所有声明和节点的列表
     return LaunchDescription([
         declare_use_sim_time,          # 必须先声明参数
         node_robot_state_publisher,     # 再运行依赖参数的节点
-        #node_joint_state_publisher_gui  # <--- 新增
     ])

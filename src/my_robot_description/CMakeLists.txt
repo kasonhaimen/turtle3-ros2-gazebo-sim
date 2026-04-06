@@ -38,5 +38,6 @@ install(DIRECTORY
 
 install(PROGRAMS
   scripts/obstacle_avoidance.py
+  scripts/scan_frame_fixer.py
   DESTINATION lib/${PROJECT_NAME}
 )
