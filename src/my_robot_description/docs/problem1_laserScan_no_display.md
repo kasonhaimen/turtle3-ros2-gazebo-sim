@@ -184,3 +184,159 @@ Scan received!
 ```
 
 RViz中LaserScan可以正确显示红点了。
+
+---
+
+## 附录：ROS2 Launch 系统原理
+
+### 1. LaunchDescription 是什么？
+
+`LaunchDescription` 是 ROS2 launch 系统的核心概念，它描述了启动时要创建的所有实体（节点、参数、环境变量等）。
+
+在 `slam-sim.launch.py` 中：
+
+```python
+def generate_launch_description():
+    # ... 定义各种节点和配置 ...
+    
+    return LaunchDescription([
+        set_gz_resource_path,    # 环境变量
+        DeclareLaunchArgument(...), # 参数声明
+        rsp,                      # 机器人状态发布器
+        gz_sim,                   # Gazebo仿真器
+        spawn_robot,              # 机器人实体生成
+        bridge,                   # ROS-Gazebo桥接器
+        slam_toolbox,             # SLAM工具箱
+        rviz2,                   # 可视化工具
+        scan_fixer               # LaserScan修复节点
+    ])
+```
+
+### 2. 节点（Node）是什么？
+
+**节点**是一个独立的可执行程序，通过 ROS2 图进行通信。
+
+#### Node vs LifecycleNode
+
+| 类型 | 说明 |
+|------|------|
+| `Node` | 普通节点，启动后立即进入 Active 状态 |
+| `LifecycleNode` | 有生命周期管理的节点，需要显式配置和激活 |
+
+slam_toolbox 是 `LifecycleNode`，需要官方 launch 文件来管理其生命周期。
+
+### 3. scan_fixer 的工作原理
+
+#### 3.1 创建节点（scan_frame_fixer.py）
+
+```python
+class ScanFrameFixer(Node):
+    def __init__(self):
+        super().__init__('scan_frame_fixer')  # 节点名称
+        
+        # 订阅原始 /scan
+        self.sub = self.create_subscription(
+            LaserScan,
+            '/scan',                    # 输入话题
+            self.callback,              # 回调函数
+            10
+        )
+        
+        # 发布修复后的 /scan_fixed
+        self.pub = self.create_publisher(
+            LaserScan,
+            '/scan_fixed',              # 输出话题
+            10
+        )
+```
+
+#### 3.2 在 launch 中启动
+
+```python
+# 在 slam-sim.launch.py 中
+scan_fixer = ExecuteProcess(
+    cmd=['/usr/bin/python3', '/path/to/scan_frame_fixer.py'],
+    output='screen'
+)
+```
+
+**执行流程：**
+```
+Launch系统启动
+    ↓
+读取 slam-sim.launch.py
+    ↓
+创建 LaunchDescription
+    ↓
+按顺序启动所有实体：
+    1. rsp (robot_state_publisher)
+    2. gz_sim (Gazebo)
+    3. spawn_robot (创建机器人)
+    4. bridge (桥接器)
+    5. slam_toolbox (SLAM)
+    6. rviz2 (可视化)
+    7. scan_fixer (运行 Python 脚本) ← 这里
+```
+
+#### 3.3 scan_fixer 的数据流
+
+```
+Gazebo 发布的 /scan:
+┌─────────────────────────┐
+│ header.frame_id =        │
+│ "my_cool_robot/base_link/laser"  ← 不匹配 TF tree
+│ ranges = [...360 points...]│
+└─────────────────────────┘
+           ↓ scan_frame_fixer 订阅
+           ↓ 修改 frame_id
+┌─────────────────────────┐
+│ header.frame_id = "laser_frame"  ← 匹配 TF tree
+│ ranges = [...360 points...]│
+└─────────────────────────┘
+           ↓ 发布 /scan_fixed
+           ↓
+    ┌─────┴─────┐
+    ↓           ↓
+  RViz       slam_toolbox
+  显示        建图
+```
+
+### 4. ROS2 话题通信架构
+
+```
+┌────────────────┐      /scan       ┌────────────────┐
+│  Gazebo Bridge │ ──────────────→ │ scan_frame_    │
+│                │                 │ fixer          │
+└────────────────┘                 └───────┬────────┘
+                                          │
+                                          │ /scan_fixed
+                                          ↓
+                              ┌────────────┴────────────┐
+                              ↓                         ↓
+                          ┌───────┐              ┌──────────────┐
+                          │ RViz  │              │ slam_toolbox  │
+                          │显示   │              │ 创建map frame │
+                          └───────┘              └───────────────┘
+```
+
+### 5. 生命周期状态（以 slam_toolbox 为例）
+
+```
+LifecycleNode 状态机：
+
+    ┌──────────────┐
+    │ Unconfigured │ ← 初始状态（用Node直接启动会停在这里）
+    └──────┬───────┘
+           │ CONFIGURE (Transition)
+           ↓
+    ┌──────────────┐
+    │  Inactive   │ ← 已配置但未激活
+    └──────┬───────┘
+           │ ACTIVATE (Transition)
+           ↓
+    ┌──────────────┐
+    │   Active    │ ← 正常工作状态
+    └──────────────┘
+```
+
+官方 `online_async_launch.py` 会自动发送 CONFIGURE 和 ACTIVATE 事件，所以 slam_toolbox 能正常工作。
